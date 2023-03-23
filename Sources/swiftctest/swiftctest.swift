@@ -2,6 +2,7 @@ import somec
 
 enum SomeError: Error {
     case ReturnIndicatedError
+    case MissingData
 }
 
 func wrapSomeInt(val: Int64) -> Int64 {
@@ -73,4 +74,19 @@ func wrapSomeIntModifyArrayMutable(values: inout [Int64]) throws {
             throw SomeError.ReturnIndicatedError
         }
     }
+}
+
+func wrapSomeIntArrayCalleeOwned() throws -> [Int64] {
+    var data: UnsafePointer<Int64>?
+    var count = UInt32(0)
+    try withUnsafeMutablePointer(to: &data) {
+        guard someIntArrayCalleeOwned(&count, $0) == 0 else {
+            throw SomeError.ReturnIndicatedError
+        }
+    }
+    guard let data = data else {
+        throw SomeError.MissingData
+    }
+    let buffer = UnsafeBufferPointer<Int64>(start: data, count: Int(count))
+    return Array(buffer)
 }

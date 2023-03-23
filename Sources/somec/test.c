@@ -46,3 +46,18 @@ int someIntModifyArray(unsigned int count, int64_t vals[]) {
 	}
 	return 0;
 }
+
+const int64_t ownedData[4] = {42, 42, 42, 42};
+
+int someIntArrayCalleeOwned(unsigned int *count, const int64_t *vals[]) {
+	// This example is mimicking the behaviour I've seen with
+	// TIFFGetField in libtiff.
+
+	if ((NULL == count) || (NULL == vals)) {
+		return -1;
+	}
+	*count = 4;
+	*vals = ownedData;
+	return 0;
+}
+

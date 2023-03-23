@@ -48,4 +48,9 @@ final class swiftctestTests: XCTestCase {
         try wrapSomeIntModifyArrayMutable(values: &values)
         XCTAssertEqual(values, expected, "Unexpected values")
     }
+
+    func testSomeIntArrayCalleeOwned() throws {
+        let result = try wrapSomeIntArrayCalleeOwned()
+        XCTAssertEqual(result, [Int64](repeating: 42, count: 4), "Incorrect result")
+    }
 }
