@@ -1,0 +1,4 @@
+module somec [system] {
+	header "test.h"
+	export *
+}
