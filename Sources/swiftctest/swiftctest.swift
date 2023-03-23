@@ -1,11 +1,17 @@
 import somec
 
+enum SomeError: Error {
+    case ReturnIndicatedError
+}
+
 func wrapSomeInt(val: Int64) -> Int64 {
     return someInt(val)
 }
 
-func wrapSomeIntModify(val: inout Int64) -> Int {
-    return Int(someIntModify(&val))
+func wrapSomeIntModify(val: inout Int64) throws {
+    guard someIntModify(&val) == 0 else {
+        throw SomeError.ReturnIndicatedError
+    }
 }
 
 func wrapSomeSumIntArrayBad(values: inout [Int64]) -> Int64 {
@@ -38,5 +44,33 @@ func wrapSomeSumIntArrayNoCopy(values: [Int64]) -> Int64 {
     return values.withUnsafeBufferPointer {
         let buffer = UnsafeMutableBufferPointer<Int64>(mutating: $0)
         return someSumIntArray(UInt32(count), buffer.baseAddress)
+    }
+}
+
+func wrapSomeSumIntPointer(values: [Int64]) -> Int64 {
+    // For safety, we're actually going to duplicate
+    // the values into something mutable for the C world
+    let copyValues = UnsafeMutablePointer<Int64>.allocate(capacity: values.count)
+    defer { copyValues.deallocate() }
+    copyValues.initialize(from: values, count: values.count)
+    return someSumIntPointer(UInt32(values.count), copyValues)
+}
+
+func wrapSomeIntModifyArrayImmutable(values: [Int64]) throws -> [Int64] {
+    var mutable = values
+    try mutable.withUnsafeMutableBufferPointer {
+        guard someIntModifyArray(UInt32(values.count), $0.baseAddress) == 0 else {
+            throw SomeError.ReturnIndicatedError
+        }
+    }
+    return mutable
+}
+
+func wrapSomeIntModifyArrayMutable(values: inout [Int64]) throws {
+    let count = values.count
+    try values.withUnsafeMutableBufferPointer {
+        guard someIntModifyArray(UInt32(count), $0.baseAddress) == 0 else {
+            throw SomeError.ReturnIndicatedError
+        }
     }
 }
